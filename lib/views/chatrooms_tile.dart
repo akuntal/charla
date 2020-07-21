@@ -35,7 +35,10 @@ class _ChatRoomsTileState extends State<ChatRoomsTile> {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return Chat(chatRoomId: widget.chatRoomId);
+          return Chat(
+            chatRoomId: widget.chatRoomId,
+            name: name,
+          );
         }));
       },
       child: Container(

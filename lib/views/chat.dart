@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 class Chat extends StatefulWidget {
   final String chatRoomId;
 
-  Chat({this.chatRoomId});
+  final String name;
+
+  Chat({this.chatRoomId, this.name});
 
   @override
   _ChatState createState() => _ChatState();
@@ -22,14 +24,16 @@ class _ChatState extends State<Chat> {
       stream: chats,
       builder: (context, snapshot) {
         return snapshot.hasData
-            ? ListView.builder(
-                itemCount: snapshot.data.documents.length,
-                itemBuilder: (context, index) {
-                  return MessageTile(
-                    message: snapshot.data.documents[index].data["message"],
-                    sendByMe: Constants.uid == snapshot.data.documents[index].data["sendBy"],
-                  );
-                })
+            ? Container(
+                padding: EdgeInsets.only(bottom: 100),
+                child: ListView.builder(
+                    itemCount: snapshot.data.documents.length,
+                    itemBuilder: (context, index) {
+                      return MessageTile(
+                        message: snapshot.data.documents[index].data["message"],
+                        sendByMe: Constants.uid == snapshot.data.documents[index].data["sendBy"],
+                      );
+                    }))
             : Container();
       },
     );
@@ -64,7 +68,7 @@ class _ChatState extends State<Chat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBarMain(context),
+      appBar: appBarMain(context, title: widget.name),
       body: Container(
         child: Stack(
           children: [
