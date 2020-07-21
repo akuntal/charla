@@ -2,11 +2,13 @@ import 'package:charla/helper/HelperFunctions.dart';
 import 'package:charla/helper/theme.dart';
 import 'package:charla/services/auth.dart';
 import 'package:charla/services/database.dart';
+import 'package:charla/views/chat.dart';
 import 'package:charla/views/chatroom.dart';
 import 'package:charla/views/forgot_password.dart';
 import 'package:charla/widget/widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleView;
@@ -26,6 +28,22 @@ class _SignInState extends State<SignIn> {
 
   bool isLoading = false;
 
+  googleSignUp() async {
+    await authService.signInWithGoogle(context).whenComplete(() {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Chat()));
+    });
+  }
+
+  void showToast(String msg) {
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.white,
+        timeInSecForIosWeb: 1,
+        textColor: Colors.black54);
+  }
+
   signIn() async {
     if (formKey.currentState.validate()) {
       setState(() {
@@ -40,10 +58,10 @@ class _SignInState extends State<SignIn> {
               await DatabaseMethods().getUserInfo(emailController.text);
 
           HelperFunctions.saveUserLoggedInSharedPreference(true);
-          HelperFunctions.saveUserNameSharedPreference(
-              userInfoSnapshot.documents[0].data['userName']);
+          HelperFunctions.saveNameSharedPreference(userInfoSnapshot.documents[0].data['name']);
           HelperFunctions.saveUserEmailSharedPreference(
               userInfoSnapshot.documents[0].data['userEmail']);
+          HelperFunctions.saveUserUidSharedPreference(userInfoSnapshot.documents[0].data['uid']);
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatRoom()));
         } else {
@@ -51,6 +69,11 @@ class _SignInState extends State<SignIn> {
             isLoading = false;
           });
         }
+      }).catchError((e) {
+        setState(() {
+          isLoading = false;
+        });
+        showToast(e.message);
       });
     }
   }
@@ -141,15 +164,20 @@ class _SignInState extends State<SignIn> {
                 SizedBox(
                   height: 16,
                 ),
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  decoration:
-                      BoxDecoration(borderRadius: BorderRadius.circular(30), color: Colors.white),
-                  width: MediaQuery.of(context).size.width,
-                  child: Text(
-                    "Sign In with Google",
-                    style: TextStyle(fontSize: 17, color: CustomTheme.textColor),
-                    textAlign: TextAlign.center,
+                GestureDetector(
+                  onTap: () {
+                    googleSignUp();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    decoration:
+                        BoxDecoration(borderRadius: BorderRadius.circular(30), color: Colors.white),
+                    width: MediaQuery.of(context).size.width,
+                    child: Text(
+                      "Sign In with Google",
+                      style: TextStyle(fontSize: 17, color: CustomTheme.textColor),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
                 SizedBox(

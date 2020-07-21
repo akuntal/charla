@@ -1,5 +1,8 @@
+import 'package:charla/helper/HelperFunctions.dart';
 import 'package:charla/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -15,7 +18,7 @@ class AuthService {
       return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
-      return null;
+      return throw (e);
     }
   }
 
@@ -32,8 +35,31 @@ class AuthService {
     }
   }
 
+  Future<String> signInWithGoogle(BuildContext context) async {
+    final GoogleSignIn _googleSignIn = new GoogleSignIn();
+
+    final GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
+    final GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+        idToken: googleSignInAuthentication.idToken,
+        accessToken: googleSignInAuthentication.accessToken);
+
+    AuthResult result = await _auth.signInWithCredential(credential);
+    FirebaseUser user = result.user;
+    assert(!user.isAnonymous);
+    assert(await user.getIdToken() != null);
+
+    final FirebaseUser currentUser = await _auth.currentUser();
+    assert(user.uid == currentUser.uid);
+
+    return 'signInWithGoogle succeeded: $user';
+  }
+
   Future signOut() async {
     try {
+      HelperFunctions.saveUserLoggedInSharedPreference(false);
       return await _auth.signOut();
     } catch (e) {
       print(e.toString());

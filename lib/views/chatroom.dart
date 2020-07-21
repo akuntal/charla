@@ -25,10 +25,10 @@ class _ChatRoomState extends State<ChatRoom> {
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
                   return ChatRoomsTile(
-                    userName: snapshot.data.documents[index].data['chatRoomId']
+                    uid: snapshot.data.documents[index].data['chatRoomId']
                         .toString()
                         .replaceAll("_", "")
-                        .replaceAll(Constants.myName, ""),
+                        .replaceAll(Constants.uid, ""),
                     chatRoomId: snapshot.data.documents[index].data["chatRoomId"],
                   );
                 })
@@ -44,8 +44,9 @@ class _ChatRoomState extends State<ChatRoom> {
   }
 
   getUserInfogetChats() async {
-    Constants.myName = await HelperFunctions.getUserNameSharedPreference();
-    DatabaseMethods().getUserChats(Constants.myName).then((snapshots) {
+    Constants.uid = await HelperFunctions.getUserUidSharedPreference();
+    Constants.myName = await HelperFunctions.getNameSharedPreference();
+    DatabaseMethods().getUserChats(Constants.uid).then((snapshots) {
       setState(() {
         chatRooms = snapshots;
         print("we got the data + ${chatRooms.toString()} this is name  ${Constants.myName}");

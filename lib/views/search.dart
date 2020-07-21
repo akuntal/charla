@@ -1,6 +1,6 @@
 import 'package:charla/helper/constants.dart';
 import 'package:charla/services/database.dart';
-import 'package:charla/views/chart.dart';
+import 'package:charla/views/chat.dart';
 import 'package:charla/widget/widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -41,18 +41,19 @@ class _SearchState extends State<Search> {
             itemCount: searchResultSnapshot.documents.length,
             itemBuilder: (context, index) {
               return userTile(
-                searchResultSnapshot.documents[index].data["userName"],
+                searchResultSnapshot.documents[index].data["displayName"],
                 searchResultSnapshot.documents[index].data["userEmail"],
+                searchResultSnapshot.documents[index].data["uid"],
               );
             })
         : Container();
   }
 
   /// 1.create a chatroom, send user to the chatroom, other userdetails
-  sendMessage(String userName) {
-    List<String> users = [Constants.myName, userName];
+  sendMessage(String uid, String displayName) {
+    List<String> users = [Constants.uid, uid];
 
-    String chatRoomId = getChatRoomId(Constants.myName, userName);
+    String chatRoomId = getChatRoomId(Constants.uid, uid);
 
     Map<String, dynamic> chatRoom = {
       "users": users,
@@ -69,7 +70,7 @@ class _SearchState extends State<Search> {
                 )));
   }
 
-  Widget userTile(String userName, String userEmail) {
+  Widget userTile(String displayName, String userEmail, String uid) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
@@ -78,7 +79,7 @@ class _SearchState extends State<Search> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                userName,
+                displayName,
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               Text(
@@ -90,7 +91,7 @@ class _SearchState extends State<Search> {
           Spacer(),
           GestureDetector(
             onTap: () {
-              sendMessage(userName);
+              sendMessage(uid, displayName);
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),

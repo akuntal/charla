@@ -13,10 +13,18 @@ class DatabaseMethods {
         .catchError((e) => print(e.toString()));
   }
 
-  searchByName(String userName) {
+  getUserInfoByUid(String uid) async {
     return Firestore.instance
         .collection('users')
-        // .where('userName', isEqualTo: userName)
+        .where('uid', isEqualTo: uid)
+        .getDocuments()
+        .catchError((e) => print(e.toString()));
+  }
+
+  searchByName(String displayName) {
+    return Firestore.instance
+        .collection('users')
+        // .where('displayName', isEqualTo: displayName)
         .getDocuments()
         .catchError((e) => print(e.toString()));
   }
@@ -47,10 +55,7 @@ class DatabaseMethods {
         .catchError((e) => print(e.toString()));
   }
 
-  getUserChats(String userName) async {
-    return Firestore.instance
-        .collection('chatRoom')
-        .where('users', arrayContains: userName)
-        .snapshots();
+  getUserChats(String uid) async {
+    return Firestore.instance.collection('chatRoom').where('users', arrayContains: uid).snapshots();
   }
 }

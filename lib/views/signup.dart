@@ -30,8 +30,9 @@ class _SignupState extends State<Signup> {
   signUp() async {
     if (formKey.currentState.validate()) {
       Map<String, String> userMap = {
-        'userName': usernameEditingController.text,
-        'userEmail': emailEditingController.text
+        'name': usernameEditingController.text,
+        'userEmail': emailEditingController.text,
+        'displayName': usernameEditingController.text
       };
       setState(() {
         isLoading = true;
@@ -41,10 +42,12 @@ class _SignupState extends State<Signup> {
           .signUpWithEmailAndPassword(emailEditingController.text, passwordEditingController.text)
           .then((result) {
         if (result != null) {
+          userMap['uid'] = result.uid;
           databaseMethods.addUserInfo(userMap);
 
           HelperFunctions.saveUserLoggedInSharedPreference(true);
-          HelperFunctions.saveUserNameSharedPreference(usernameEditingController.text);
+          HelperFunctions.saveUserUidSharedPreference(result.uid);
+          HelperFunctions.saveNameSharedPreference(usernameEditingController.text);
           HelperFunctions.saveUserEmailSharedPreference(emailEditingController.text);
 
           Navigator.pushReplacement(
@@ -91,10 +94,10 @@ class _SignupState extends State<Signup> {
                           style: simpleTextStyle(),
                           validator: (val) {
                             return val.isEmpty || val.length < 3
-                                ? "Enter Username 3+ characters"
+                                ? "Enter Name 3+ characters"
                                 : null;
                           },
-                          decoration: textFieldInputDecoration('username'),
+                          decoration: textFieldInputDecoration('name'),
                         ),
                         TextFormField(
                           controller: emailEditingController,
