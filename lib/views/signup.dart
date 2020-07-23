@@ -4,7 +4,10 @@ import 'package:charla/services/auth.dart';
 import 'package:charla/services/database.dart';
 import 'package:charla/views/chatroom.dart';
 import 'package:charla/widget/widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Signup extends StatefulWidget {
   final Function toggleView;
@@ -26,6 +29,58 @@ class _SignupState extends State<Signup> {
   bool isLoading = false;
 
   final formKey = GlobalKey<FormState>();
+
+  googleSignUp() async {
+    Map<String, String> userMap = {};
+
+    setState(() {
+      isLoading = true;
+    });
+    FirebaseUser user = await authService.signInWithGoogle(context);
+    setState(() {
+      isLoading = false;
+    });
+    if (user != null) {
+      // final QuerySnapshot result = await Firestore.instance
+      //     .collection('users')
+      //     .where('uid', isEqualTo: user.uid)
+      //     .getDocuments();
+
+      final QuerySnapshot result = await databaseMethods.getUserInfoByUid(user.uid);
+
+      final List<DocumentSnapshot> documents = result.documents;
+      if (documents.length == 0) {
+        // Update data to server if new user
+        userMap['name'] = user.displayName;
+        userMap['displayName'] = user.displayName;
+        userMap['userEmail'] = user.email;
+        userMap['uid'] = user.uid;
+        userMap['photoUrl'] = user.photoUrl;
+
+        databaseMethods.addUserInfo(userMap);
+
+        Utils.saveUserLoggedInSharedPreference(true);
+        Utils.saveUserUidSharedPreference(user.uid);
+        Utils.saveNameSharedPreference(user.displayName);
+        Utils.saveUserEmailSharedPreference(user.email);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatRoom(),
+          ),
+        );
+      } else {
+        Fluttertoast.showToast(
+            msg: 'User Already Exist!',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.white,
+            timeInSecForIosWeb: 1,
+            textColor: Colors.black54);
+      }
+    }
+  }
 
   signUp() async {
     if (formKey.currentState.validate()) {
@@ -148,15 +203,21 @@ class _SignupState extends State<Signup> {
                   SizedBox(
                     height: 16,
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    decoration:
-                        BoxDecoration(borderRadius: BorderRadius.circular(30), color: Colors.white),
-                    width: MediaQuery.of(context).size.width,
-                    child: Text(
-                      "Sign Up with Google",
-                      style: TextStyle(fontSize: 17, color: CustomTheme.textColor),
-                      textAlign: TextAlign.center,
+                  GestureDetector(
+                    onTap: () {
+                      // sign up
+                      googleSignUp();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30), color: Colors.white),
+                      width: MediaQuery.of(context).size.width,
+                      child: Text(
+                        "Sign Up with Google",
+                        style: TextStyle(fontSize: 17, color: CustomTheme.textColor),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                   SizedBox(

@@ -35,7 +35,7 @@ class AuthService {
     }
   }
 
-  Future<String> signInWithGoogle(BuildContext context) async {
+  Future<FirebaseUser> signInWithGoogle(BuildContext context) async {
     final GoogleSignIn _googleSignIn = new GoogleSignIn();
 
     final GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
@@ -47,14 +47,7 @@ class AuthService {
         accessToken: googleSignInAuthentication.accessToken);
 
     AuthResult result = await _auth.signInWithCredential(credential);
-    FirebaseUser user = result.user;
-    assert(!user.isAnonymous);
-    assert(await user.getIdToken() != null);
-
-    final FirebaseUser currentUser = await _auth.currentUser();
-    assert(user.uid == currentUser.uid);
-
-    return 'signInWithGoogle succeeded: $user';
+    return result.user;
   }
 
   Future signOut() async {
