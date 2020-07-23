@@ -19,19 +19,17 @@ class _SearchState extends State<Search> {
   bool haveUserSearched = false;
 
   initiateSearch() async {
-    if (searchEditingController.text.isNotEmpty) {
+    setState(() {
+      isLoading = true;
+    });
+    await databaseMethods.searchByName(searchEditingController.text).then((snapshot) {
+      searchResultSnapshot = snapshot;
+      print("$searchResultSnapshot");
       setState(() {
-        isLoading = true;
+        isLoading = false;
+        haveUserSearched = true;
       });
-      await databaseMethods.searchByName(searchEditingController.text).then((snapshot) {
-        searchResultSnapshot = snapshot;
-        print("$searchResultSnapshot");
-        setState(() {
-          isLoading = false;
-          haveUserSearched = true;
-        });
-      });
-    }
+    });
   }
 
   Widget userList() {
@@ -67,6 +65,7 @@ class _SearchState extends State<Search> {
         MaterialPageRoute(
             builder: (context) => Chat(
                   chatRoomId: chatRoomId,
+                  name: displayName,
                 )));
   }
 
@@ -118,6 +117,7 @@ class _SearchState extends State<Search> {
 
   @override
   void initState() {
+    initiateSearch();
     super.initState();
   }
 
