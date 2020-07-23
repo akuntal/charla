@@ -1,4 +1,4 @@
-import 'package:charla/helper/HelperFunctions.dart';
+import 'package:charla/helper/Utils.dart';
 import 'package:charla/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +59,7 @@ class AuthService {
 
   Future signOut() async {
     try {
-      HelperFunctions.saveUserLoggedInSharedPreference(false);
+      Utils.saveUserLoggedInSharedPreference(false);
       return await _auth.signOut();
     } catch (e) {
       print(e.toString());

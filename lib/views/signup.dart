@@ -1,4 +1,4 @@
-import 'package:charla/helper/HelperFunctions.dart';
+import 'package:charla/helper/Utils.dart';
 import 'package:charla/helper/theme.dart';
 import 'package:charla/services/auth.dart';
 import 'package:charla/services/database.dart';
@@ -45,10 +45,10 @@ class _SignupState extends State<Signup> {
           userMap['uid'] = result.uid;
           databaseMethods.addUserInfo(userMap);
 
-          HelperFunctions.saveUserLoggedInSharedPreference(true);
-          HelperFunctions.saveUserUidSharedPreference(result.uid);
-          HelperFunctions.saveNameSharedPreference(usernameEditingController.text);
-          HelperFunctions.saveUserEmailSharedPreference(emailEditingController.text);
+          Utils.saveUserLoggedInSharedPreference(true);
+          Utils.saveUserUidSharedPreference(result.uid);
+          Utils.saveNameSharedPreference(usernameEditingController.text);
+          Utils.saveUserEmailSharedPreference(emailEditingController.text);
 
           Navigator.pushReplacement(
             context,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:charla/helper/HelperFunctions.dart';
+import 'package:charla/helper/Utils.dart';
 import 'package:charla/helper/authenticate.dart';
 import 'package:charla/views/chatroom.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   getLoggedInState() async {
-    await HelperFunctions.getUserLoggedInSharedPreference().then((value) {
+    await Utils.getUserLoggedInSharedPreference().then((value) {
       setState(() {
         userIsLoggedIn = value;
       });

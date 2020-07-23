@@ -31,7 +31,6 @@ dependencies:
   shared_preferences: ^0.5.8
   google_sign_in: ^4.5.1
   firebase_auth: ^0.16.1
-  # random_string: ^2.1.0
   cloud_firestore: ^0.13.7
   fluttertoast: ^7.0.1
 

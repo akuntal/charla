@@ -1,4 +1,4 @@
-import 'package:charla/helper/HelperFunctions.dart';
+import 'package:charla/helper/Utils.dart';
 import 'package:charla/helper/authenticate.dart';
 import 'package:charla/helper/constants.dart';
 import 'package:charla/services/auth.dart';
@@ -44,8 +44,8 @@ class _ChatRoomState extends State<ChatRoom> {
   }
 
   getUserInfogetChats() async {
-    Constants.uid = await HelperFunctions.getUserUidSharedPreference();
-    Constants.myName = await HelperFunctions.getNameSharedPreference();
+    Constants.uid = await Utils.getUserUidSharedPreference();
+    Constants.myName = await Utils.getNameSharedPreference();
     DatabaseMethods().getUserChats(Constants.uid).then((snapshots) {
       setState(() {
         chatRooms = snapshots;
