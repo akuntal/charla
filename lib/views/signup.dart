@@ -31,7 +31,7 @@ class _SignupState extends State<Signup> {
   final formKey = GlobalKey<FormState>();
 
   googleSignUp() async {
-    Map<String, String> userMap = {};
+    Map<String, dynamic> userMap = {};
 
     setState(() {
       isLoading = true;
@@ -41,11 +41,6 @@ class _SignupState extends State<Signup> {
       isLoading = false;
     });
     if (user != null) {
-      // final QuerySnapshot result = await Firestore.instance
-      //     .collection('users')
-      //     .where('uid', isEqualTo: user.uid)
-      //     .getDocuments();
-
       final QuerySnapshot result = await databaseMethods.getUserInfoByUid(user.uid);
 
       final List<DocumentSnapshot> documents = result.documents;
@@ -53,10 +48,10 @@ class _SignupState extends State<Signup> {
         // Update data to server if new user
         userMap['name'] = user.displayName;
         userMap['displayName'] = user.displayName;
-        userMap['userEmail'] = user.email;
+        userMap['email'] = user.email;
         userMap['uid'] = user.uid;
         userMap['photoUrl'] = user.photoUrl;
-
+        userMap['createdAt'] = Timestamp.now();
         databaseMethods.addUserInfo(userMap);
 
         Utils.saveUserLoggedInSharedPreference(true);
@@ -84,10 +79,11 @@ class _SignupState extends State<Signup> {
 
   signUp() async {
     if (formKey.currentState.validate()) {
-      Map<String, String> userMap = {
+      Map<String, dynamic> userMap = {
         'name': usernameEditingController.text,
-        'userEmail': emailEditingController.text,
-        'displayName': usernameEditingController.text
+        'email': emailEditingController.text,
+        'displayName': usernameEditingController.text,
+        'createdAt': Timestamp.now()
       };
       setState(() {
         isLoading = true;

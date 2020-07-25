@@ -16,9 +16,9 @@ class Utils {
     return await preferences.setString(sharedPreferenceNameKey, name);
   }
 
-  static Future<bool> saveUserEmailSharedPreference(String userEmail) async {
+  static Future<bool> saveUserEmailSharedPreference(String email) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    return await preferences.setString(sharedPreferenceUserEmailKey, userEmail);
+    return await preferences.setString(sharedPreferenceUserEmailKey, email);
   }
 
   static Future<bool> saveUserUidSharedPreference(String uid) async {

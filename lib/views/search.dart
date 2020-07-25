@@ -22,7 +22,7 @@ class _SearchState extends State<Search> {
     setState(() {
       isLoading = true;
     });
-    await databaseMethods.searchByName(searchEditingController.text).then((snapshot) {
+    await databaseMethods.fetchAllUsers().then((snapshot) {
       searchResultSnapshot = snapshot;
       print("$searchResultSnapshot");
       setState(() {
@@ -38,10 +38,14 @@ class _SearchState extends State<Search> {
             shrinkWrap: true,
             itemCount: searchResultSnapshot.documents.length,
             itemBuilder: (context, index) {
+              if (Constants.uid == searchResultSnapshot.documents[index].data["uid"]) {
+                return Container();
+              }
               return userTile(
                 searchResultSnapshot.documents[index].data["displayName"],
-                searchResultSnapshot.documents[index].data["userEmail"],
+                searchResultSnapshot.documents[index].data["email"],
                 searchResultSnapshot.documents[index].data["uid"],
+                searchResultSnapshot.documents[index].data["photoUrl"],
               );
             })
         : Container();
@@ -69,11 +73,20 @@ class _SearchState extends State<Search> {
                 )));
   }
 
-  Widget userTile(String displayName, String userEmail, String uid) {
+  Widget userTile(String displayName, String email, String uid, String photoUrl) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         children: [
+          Container(
+            padding: EdgeInsets.only(right: 10),
+            child: CircleAvatar(
+              backgroundImage: photoUrl != null
+                  ? NetworkImage(photoUrl)
+                  : AssetImage('assets/images/avatar.png'),
+              backgroundColor: Colors.white30,
+            ),
+          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -82,7 +95,7 @@ class _SearchState extends State<Search> {
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               Text(
-                userEmail,
+                email,
                 style: TextStyle(color: Colors.white, fontSize: 16),
               )
             ],
