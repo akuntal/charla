@@ -1,12 +1,12 @@
-import 'package:charla/helper/HelperFunctions.dart';
+import 'package:charla/helper/Utils.dart';
 import 'package:charla/helper/theme.dart';
 import 'package:charla/services/auth.dart';
 import 'package:charla/services/database.dart';
-import 'package:charla/views/chat.dart';
 import 'package:charla/views/chatroom.dart';
 import 'package:charla/views/forgot_password.dart';
 import 'package:charla/widget/widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -25,13 +25,49 @@ class _SignInState extends State<SignIn> {
   final formKey = GlobalKey<FormState>();
 
   AuthService authService = new AuthService();
+  DatabaseMethods databaseMethods = new DatabaseMethods();
 
   bool isLoading = false;
 
   googleSignUp() async {
-    await authService.signInWithGoogle(context).whenComplete(() {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Chat()));
+    setState(() {
+      isLoading = true;
     });
+
+    FirebaseUser user = await authService.signInWithGoogle(context);
+
+    if (user != null) {
+      final QuerySnapshot result = await databaseMethods.getUserInfoByUid(user.uid);
+      final List<DocumentSnapshot> documents = result.documents;
+      setState(() {
+        isLoading = false;
+      });
+      if (documents.length == 1) {
+        Utils.saveUserLoggedInSharedPreference(true);
+        Utils.saveUserUidSharedPreference(user.uid);
+        Utils.saveNameSharedPreference(user.displayName);
+        Utils.saveUserEmailSharedPreference(user.email);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatRoom(),
+          ),
+        );
+      } else {
+        Fluttertoast.showToast(
+            msg: 'User does not exist',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.white,
+            timeInSecForIosWeb: 1,
+            textColor: Colors.black54);
+      }
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void showToast(String msg) {
@@ -57,11 +93,10 @@ class _SignInState extends State<SignIn> {
           QuerySnapshot userInfoSnapshot =
               await DatabaseMethods().getUserInfo(emailController.text);
 
-          HelperFunctions.saveUserLoggedInSharedPreference(true);
-          HelperFunctions.saveNameSharedPreference(userInfoSnapshot.documents[0].data['name']);
-          HelperFunctions.saveUserEmailSharedPreference(
-              userInfoSnapshot.documents[0].data['userEmail']);
-          HelperFunctions.saveUserUidSharedPreference(userInfoSnapshot.documents[0].data['uid']);
+          Utils.saveUserLoggedInSharedPreference(true);
+          Utils.saveNameSharedPreference(userInfoSnapshot.documents[0].data['name']);
+          Utils.saveUserEmailSharedPreference(userInfoSnapshot.documents[0].data['email']);
+          Utils.saveUserUidSharedPreference(userInfoSnapshot.documents[0].data['uid']);
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatRoom()));
         } else {

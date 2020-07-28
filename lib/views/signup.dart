@@ -1,10 +1,13 @@
-import 'package:charla/helper/HelperFunctions.dart';
+import 'package:charla/helper/Utils.dart';
 import 'package:charla/helper/theme.dart';
 import 'package:charla/services/auth.dart';
 import 'package:charla/services/database.dart';
 import 'package:charla/views/chatroom.dart';
 import 'package:charla/widget/widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Signup extends StatefulWidget {
   final Function toggleView;
@@ -27,12 +30,60 @@ class _SignupState extends State<Signup> {
 
   final formKey = GlobalKey<FormState>();
 
+  googleSignUp() async {
+    Map<String, dynamic> userMap = {};
+
+    setState(() {
+      isLoading = true;
+    });
+    FirebaseUser user = await authService.signInWithGoogle(context);
+    setState(() {
+      isLoading = false;
+    });
+    if (user != null) {
+      final QuerySnapshot result = await databaseMethods.getUserInfoByUid(user.uid);
+
+      final List<DocumentSnapshot> documents = result.documents;
+      if (documents.length == 0) {
+        // Update data to server if new user
+        userMap['name'] = user.displayName;
+        userMap['displayName'] = user.displayName;
+        userMap['email'] = user.email;
+        userMap['uid'] = user.uid;
+        userMap['photoUrl'] = user.photoUrl;
+        userMap['createdAt'] = Timestamp.now();
+        databaseMethods.addUserInfo(userMap);
+
+        Utils.saveUserLoggedInSharedPreference(true);
+        Utils.saveUserUidSharedPreference(user.uid);
+        Utils.saveNameSharedPreference(user.displayName);
+        Utils.saveUserEmailSharedPreference(user.email);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatRoom(),
+          ),
+        );
+      } else {
+        Fluttertoast.showToast(
+            msg: 'User Already Exist!',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.white,
+            timeInSecForIosWeb: 1,
+            textColor: Colors.black54);
+      }
+    }
+  }
+
   signUp() async {
     if (formKey.currentState.validate()) {
-      Map<String, String> userMap = {
+      Map<String, dynamic> userMap = {
         'name': usernameEditingController.text,
-        'userEmail': emailEditingController.text,
-        'displayName': usernameEditingController.text
+        'email': emailEditingController.text,
+        'displayName': usernameEditingController.text,
+        'createdAt': Timestamp.now()
       };
       setState(() {
         isLoading = true;
@@ -45,10 +96,10 @@ class _SignupState extends State<Signup> {
           userMap['uid'] = result.uid;
           databaseMethods.addUserInfo(userMap);
 
-          HelperFunctions.saveUserLoggedInSharedPreference(true);
-          HelperFunctions.saveUserUidSharedPreference(result.uid);
-          HelperFunctions.saveNameSharedPreference(usernameEditingController.text);
-          HelperFunctions.saveUserEmailSharedPreference(emailEditingController.text);
+          Utils.saveUserLoggedInSharedPreference(true);
+          Utils.saveUserUidSharedPreference(result.uid);
+          Utils.saveNameSharedPreference(usernameEditingController.text);
+          Utils.saveUserEmailSharedPreference(emailEditingController.text);
 
           Navigator.pushReplacement(
             context,
@@ -148,15 +199,21 @@ class _SignupState extends State<Signup> {
                   SizedBox(
                     height: 16,
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    decoration:
-                        BoxDecoration(borderRadius: BorderRadius.circular(30), color: Colors.white),
-                    width: MediaQuery.of(context).size.width,
-                    child: Text(
-                      "Sign Up with Google",
-                      style: TextStyle(fontSize: 17, color: CustomTheme.textColor),
-                      textAlign: TextAlign.center,
+                  GestureDetector(
+                    onTap: () {
+                      // sign up
+                      googleSignUp();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30), color: Colors.white),
+                      width: MediaQuery.of(context).size.width,
+                      child: Text(
+                        "Sign Up with Google",
+                        style: TextStyle(fontSize: 17, color: CustomTheme.textColor),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                   SizedBox(

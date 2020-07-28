@@ -1,4 +1,4 @@
-import 'package:charla/helper/HelperFunctions.dart';
+import 'package:charla/helper/Utils.dart';
 import 'package:charla/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +35,7 @@ class AuthService {
     }
   }
 
-  Future<String> signInWithGoogle(BuildContext context) async {
+  Future<FirebaseUser> signInWithGoogle(BuildContext context) async {
     final GoogleSignIn _googleSignIn = new GoogleSignIn();
 
     final GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
@@ -47,19 +47,12 @@ class AuthService {
         accessToken: googleSignInAuthentication.accessToken);
 
     AuthResult result = await _auth.signInWithCredential(credential);
-    FirebaseUser user = result.user;
-    assert(!user.isAnonymous);
-    assert(await user.getIdToken() != null);
-
-    final FirebaseUser currentUser = await _auth.currentUser();
-    assert(user.uid == currentUser.uid);
-
-    return 'signInWithGoogle succeeded: $user';
+    return result.user;
   }
 
   Future signOut() async {
     try {
-      HelperFunctions.saveUserLoggedInSharedPreference(false);
+      Utils.saveUserLoggedInSharedPreference(false);
       return await _auth.signOut();
     } catch (e) {
       print(e.toString());

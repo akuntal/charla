@@ -1,3 +1,4 @@
+import 'package:charla/helper/Utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseMethods {
@@ -8,7 +9,7 @@ class DatabaseMethods {
   getUserInfo(String email) async {
     return Firestore.instance
         .collection('users')
-        .where('userEmail', isEqualTo: email)
+        .where('email', isEqualTo: email)
         .getDocuments()
         .catchError((e) => print(e.toString()));
   }
@@ -24,7 +25,15 @@ class DatabaseMethods {
   searchByName(String displayName) {
     return Firestore.instance
         .collection('users')
-        // .where('displayName', isEqualTo: displayName)
+        .where('displayName', isEqualTo: displayName)
+        .getDocuments()
+        .catchError((e) => print(e.toString()));
+  }
+
+  fetchAllUsers() async {
+    return Firestore.instance
+        .collection('users')
+        .orderBy('displayName')
         .getDocuments()
         .catchError((e) => print(e.toString()));
   }
